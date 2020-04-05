@@ -1,6 +1,5 @@
 ﻿using Qml.Net;
 using Qml.Net.Runtimes;
-
 using System;
 using System.IO;
 
@@ -18,21 +17,29 @@ namespace sunrise_launcher
                 Console.SetOut(writer);
                 writer.AutoFlush = true;
 
-                RuntimeManager.DiscoverOrDownloadSuitableQtRuntime();
-                using (var app = new QGuiApplication(args))
+                try
                 {
-                    App = app;
-                    using (var engine = new QQmlApplicationEngine())
+                    RuntimeManager.DiscoverOrDownloadSuitableQtRuntime();
+                    using (var app = new QGuiApplication(args))
                     {
-                        //register types
-                        Qml.Net.Qml.RegisterType<ServerList>("sunrise", 1, 1);
-                        Qml.Net.Qml.RegisterType<Server>("sunrise", 1, 1);
+                        App = app;
+                        using (var engine = new QQmlApplicationEngine())
+                        {
+                            //register types
+                            Qml.Net.Qml.RegisterType<ServerList>("sunrise", 1, 1);
+                            Qml.Net.Qml.RegisterType<Server>("sunrise", 1, 1);
 
-                        //load qml files
-                        engine.Load("main.qml");
+                            //load qml files
+                            engine.Load("main.qml");
 
-                        return app.Exec();
+                            return app.Exec();
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("exception in main: {0}", ex.Message);
+                    return 1;
                 }
             }
         }

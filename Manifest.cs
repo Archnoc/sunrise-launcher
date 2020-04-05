@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace sunrise_launcher
 {

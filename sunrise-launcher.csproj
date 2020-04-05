@@ -3,16 +3,26 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishReadyToRunShowWarnings>true</PublishReadyToRunShowWarnings>
+    <PublishSingleFile>true</PublishSingleFile>
     <RootNamespace>sunrise_launcher</RootNamespace>
     <ApplicationIcon>sunrise.ico</ApplicationIcon>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <StartupObject />
     <SignAssembly>false</SignAssembly>
     <Authors>sunrise-launcher</Authors>
   </PropertyGroup>
 
   <ItemGroup>
+    <TrimmerRootAssembly Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Qml.Net" Version="0.10.1" />
     <PackageReference Include="Qml.Net.WindowsBinaries" Version="0.10.1" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,16 +1,5 @@
 ﻿using Qml.Net;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Threading;
-using System.IO;
-using System.Diagnostics;
-using System.Security.Cryptography;
 
 namespace sunrise_launcher
 {
