@@ -251,11 +251,11 @@ namespace sunrise_launcher
             }
         }
 
-        private async Task<bool> checkfile(ManifestFile file, string path)
+        private async Task<bool> checkfile(ManifestFile file, Server server)
         {
             return await Task.Run(() =>
             {
-                path = Path.Combine(path, file.Path);
+                var path = Path.Combine(server.InstallPath, file.Path);
                 Console.WriteLine("checking file {0}", path);
 
                 if (!File.Exists(path))
@@ -300,7 +300,7 @@ namespace sunrise_launcher
                 var i = 0;
                 foreach (var file in manifest.GetFiles())
                 {
-                    UpdateProgress(server, file.Path, i++, manifest.Count());
+                    UpdateProgress(server, "verifying " + file.Path, i++, manifest.Count());
 
                     if (!file.Verify())
                     {
@@ -309,7 +309,7 @@ namespace sunrise_launcher
                         return;
                     }
 
-                    if (!await updatefile(file, path))
+                    if (!await updatefile(file, server))
                     {
                         server.State = State.Error;
                         server.Error = "Could not update file " + file.Path;
@@ -325,14 +325,15 @@ namespace sunrise_launcher
             server.State = State.Ready;
         }
 
-        private async Task<bool> updatefile(ManifestFile file, string path)
+        private async Task<bool> updatefile(ManifestFile file, Server server)
         {
-            if (await checkfile(file, path))
+            if (await checkfile(file, server))
                 return true;
 
-            path = Path.Combine(path, file.Path);
+            var path = Path.Combine(server.InstallPath, file.Path);
             var tempfile = path + "~";
             Console.WriteLine("updating file {0}", path);
+            UpdateProgress(server, "downloading " + file.Path, server.TaskDone, server.TaskCount);
 
             Shuffler.Shuffle(file.Sources);
             foreach (var source in file.Sources)

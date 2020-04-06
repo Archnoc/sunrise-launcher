@@ -9,7 +9,7 @@ ApplicationWindow {
     id: applicationWindow
     visible: true
     width: 640
-    height: 480
+    height: 320
     title: qsTr("Sunrise Launcher v0.0.1")
     background: Rectangle {
 	    color: "black" 

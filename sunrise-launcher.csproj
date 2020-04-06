@@ -5,7 +5,6 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PublishTrimmed>true</PublishTrimmed>
     <PublishReadyToRun>true</PublishReadyToRun>
-    <PublishReadyToRunShowWarnings>true</PublishReadyToRunShowWarnings>
     <PublishSingleFile>true</PublishSingleFile>
     <RootNamespace>sunrise_launcher</RootNamespace>
     <ApplicationIcon>sunrise.ico</ApplicationIcon>
@@ -13,6 +12,7 @@
     <StartupObject />
     <SignAssembly>false</SignAssembly>
     <Authors>sunrise-launcher</Authors>
+    <AssemblyName>Sunrise</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
