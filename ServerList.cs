@@ -79,7 +79,7 @@ namespace sunrise_launcher
 
             var server = new Server();
             server.ManifestURL = manifesturl;
-            server.InstallPath = installpath.Trim(); //td; check install path
+            server.InstallPath = CleanInstallPath(installpath);
 
             await GetInfoAsync(server);
             if (server.State == State.Error)
@@ -102,13 +102,21 @@ namespace sunrise_launcher
             var server = Get(oldmanifesturl);
             if (server == null) return;
             server.ManifestURL = manifesturl.Trim();
-            server.InstallPath = installpath.Trim(); //td; check install path
+            server.InstallPath = CleanInstallPath(installpath);
 
             await GetInfoAsync(server);
             this.ActivateSignal("update");
 
             await UpdateAsync(server, false);
             this.ActivateSignal("update");
+        }
+
+        private string CleanInstallPath(string path)
+        {
+            path = path.Trim();
+            path = path.Replace("\\", "/");
+            path = path.Replace("`", "");
+            return path;
         }
 
         public void Remove(string name)
