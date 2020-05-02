@@ -13,6 +13,8 @@
     <SignAssembly>false</SignAssembly>
     <Authors>sunrise-launcher</Authors>
     <AssemblyName>Sunrise</AssemblyName>
+    <DelaySign>false</DelaySign>
+    <AssemblyOriginatorKeyFile>sunrise-launcher.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
