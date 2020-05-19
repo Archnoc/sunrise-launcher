@@ -391,6 +391,10 @@ namespace sunrise_launcher
                 catch (Exception ex)
                 {
                     Console.WriteLine("exception while downloading source {0}: {0}", source.URL, ex.Message);
+                    if (ex.InnerException != null) 
+                    {
+                        Console.WriteLine("inner exception: {0}", source.URL, ex.InnerException.Message);
+                    }
                 }
             }
             return false;
