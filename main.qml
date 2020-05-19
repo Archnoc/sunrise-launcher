@@ -1,4 +1,4 @@
-﻿import QtQuick 2.6
+﻿import QtQuick 2.12
 import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.2
@@ -9,7 +9,7 @@ ApplicationWindow {
     id: applicationWindow
     visible: true
     width: 640
-    height: 320
+    height: 360
     title: qsTr("Sunrise Launcher v0.0.1")
     background: Rectangle {
 	    color: "black" 
@@ -25,7 +25,7 @@ ApplicationWindow {
 		    source: "skins/herocity/images/background_top.png" 
 		    }
 	}
-
+		
 	FontLoader {
 		id: fontMont 
 		source: "skins/herocity/fonts/FontsFree-Net-mont.ttf"
@@ -82,6 +82,21 @@ ApplicationWindow {
 
                     Item {
                         height: 48
+
+                        Rectangle {
+                            border.width: 0
+                            height: 48
+                            width: 512
+                            visible: button_server.checked
+		                    opacity: 0.25
+                            gradient: Gradient {
+                                orientation: Gradient.Horizontal
+                                GradientStop { position: 0.0; color: "transparent" }
+                                GradientStop { position: 0.5; color: "white" }
+                                GradientStop { position: 1.0; color: "transparent" }
+                            }
+		                }
+
                         RoundButton {
                             id: button_config
                             width: 34
@@ -102,7 +117,13 @@ ApplicationWindow {
 							background: Rectangle {
 							    color: "transparent"
 							}
-                            onClicked: Main.configOpen(modelData.manifestURL);
+							
+							MouseArea {
+								hoverEnabled: true
+								anchors.fill: parent
+								cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
+								onClicked: Main.configOpen(modelData.manifestURL);
+							}
                         }
 
                         RoundButton {
@@ -125,7 +146,14 @@ ApplicationWindow {
 							background: Rectangle {
 								color: "transparent"
 							}
-                            onClicked: Main.removeOpen(modelData.manifestURL);
+                           
+							
+							MouseArea {
+								hoverEnabled: true
+								anchors.fill: parent
+								cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
+								onClicked: Main.removeOpen(modelData.manifestURL);
+								}
                         }
 
                         RadioButton {
@@ -140,14 +168,17 @@ ApplicationWindow {
                             checked: (modelData.manifestURL === serverlist.selected)
                             property string manifestURL: modelData.manifestURL
 
-                            contentItem: Text {
+								contentItem: Text {
                                 text: button_server.text
                                 font.family: fontMont.name
                                 font.pointSize: 14
                                 color: "white"
                                 verticalAlignment: Text.AlignVCenter
                                 leftPadding: button_server.indicator.width + button_server.spacing
-                            }
+								}
+							
+
+                            
                         }
                     }
                 }
@@ -174,10 +205,24 @@ ApplicationWindow {
 								color: "transparent"
 								}
 				icon.source: "skins/herocity/images/add_server.png"
-                onClicked: Main.configNew();
+
+				MouseArea {
+					hoverEnabled: true
+					anchors.fill: parent
+					cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
+					onClicked: Main.configNew();
+				}
             }
         }
     }
+	
+		Image {
+			source: "skins/herocity/images/server_list.png";
+			width: 115
+			height: 17
+			x: 23
+			y: 4
+		}
 
     Pane {
         id: pane_bottom
@@ -217,7 +262,14 @@ ApplicationWindow {
 				border.color: "transparent"
 				border.width: 0
 				}
-            onClicked: Main.refreshServers();
+
+			
+			MouseArea {
+				hoverEnabled: true
+				anchors.fill: parent
+				cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
+				onClicked: Main.refreshServers();
+				}
         }
 
         Frame {
@@ -282,7 +334,14 @@ ApplicationWindow {
 				border.color: "transparent"
 				border.width: 0
 				}
-            onClicked: Main.verifyServer();
+
+			
+			MouseArea {
+				hoverEnabled: true
+				anchors.fill: parent
+				cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
+				onClicked: Main.verifyServer();
+				}
         }
 
         Button {
@@ -310,7 +369,13 @@ ApplicationWindow {
 				border.color: "transparent"
 				border.width: 0
 				}
-            onClicked: Main.startServer();
+
+			MouseArea {
+			hoverEnabled: true
+			anchors.fill: parent
+			cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
+			onClicked: Main.startServer();
+			}
         }
     }
 

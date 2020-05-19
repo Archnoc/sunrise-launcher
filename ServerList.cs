@@ -276,26 +276,28 @@ namespace sunrise_launcher
                     return true;
                 }
 
-                var hash = Hashing.GetHashAlgorithm(file);
-                if (hash == null) return false;
-
-                byte[] checksum;
-                long size = 0;
-                try
+                using (var hash = Hashing.GetHashAlgorithm(file))
                 {
-                    using (FileStream filestream = new FileStream(path, FileMode.Open))
+                    if (hash == null) return false;
+
+                    byte[] checksum;
+                    long size = 0;
+                    try
                     {
-                        size = filestream.Length;
-                        checksum = hash.ComputeHash(filestream);
+                        using (FileStream filestream = new FileStream(path, FileMode.Open))
+                        {
+                            size = filestream.Length;
+                            checksum = hash.ComputeHash(filestream);
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("exception while verifying {0}: {1}", file.Path, ex.Message);
-                    return false;
-                }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("exception while verifying {0}: {1}", file.Path, ex.Message);
+                        return false;
+                    }
 
-                return (size == file.Size && Hashing.VerifyChecksum(checksum, file));
+                    return (size == file.Size && Hashing.VerifyChecksum(checksum, file));
+                }
 
             });
         }
@@ -349,39 +351,41 @@ namespace sunrise_launcher
                 Console.WriteLine("downloading from source '{0}'.", source.URL);
                 try
                 {
-                    var hash = Hashing.GetHashAlgorithm(file);
-                    if (hash == null) return false;
-
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-                    long size = 0;
-                    byte[] checksum;
-                    var response = await client.GetAsync(source.URL);
-                    if (response.IsSuccessStatusCode)
+                    using (var hash = Hashing.GetHashAlgorithm(file))
                     {
-                        using (var reader = await response.Content.ReadAsStreamAsync())
-                        using (var hashstream = new CryptoStream(reader, hash, CryptoStreamMode.Read))
-                        using (var filestream = new FileStream(tempfile, FileMode.Create))
-                        {
-                            await hashstream.CopyToAsync(filestream);
-                            checksum = hash.Hash;
-                            size = reader.Length;
-                        }
+                        if (hash == null) return false;
 
-                        if (size == file.Size && Hashing.VerifyChecksum(checksum, file))
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                        long size = 0;
+                        byte[] checksum;
+                        var response = await client.GetAsync(source.URL);
+                        if (response.IsSuccessStatusCode)
                         {
-                            File.Move(tempfile, path, true);
-                            return true;
+                            using (var reader = await response.Content.ReadAsStreamAsync())
+                            using (var hashstream = new CryptoStream(reader, hash, CryptoStreamMode.Read))
+                            using (var filestream = new FileStream(tempfile, FileMode.Create))
+                            {
+                                await hashstream.CopyToAsync(filestream);
+                                checksum = hash.Hash;
+                                size = reader.Length;
+                            }
+
+                            if (size == file.Size && Hashing.VerifyChecksum(checksum, file))
+                            {
+                                File.Move(tempfile, path, true);
+                                return true;
+                            }
+                            else
+                            {
+                                Console.WriteLine("size or hash did not match manifest from source {0}", source.URL);
+                                File.Delete(tempfile);
+                            }
                         }
                         else
                         {
-                            Console.WriteLine("size or hash did not match manifest from source {0}", source.URL);
-                            File.Delete(tempfile);
+                            Console.WriteLine("cannot get file from source {0}", source.URL);
                         }
-                    }
-                    else
-                    {
-                        Console.WriteLine("cannot get file from source {0}", source.URL);
                     }
                 }
                 catch (Exception ex)
