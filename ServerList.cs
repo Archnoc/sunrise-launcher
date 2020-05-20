@@ -355,7 +355,8 @@ namespace sunrise_launcher
                     {
                         if (hash == null) return false;
 
-                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+                        var dirname = Path.GetDirectoryName(path);
+                        if (!string.IsNullOrWhiteSpace(dirname)) Directory.CreateDirectory(dirname);
 
                         long size = 0;
                         byte[] checksum;
@@ -390,10 +391,10 @@ namespace sunrise_launcher
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("exception while downloading source {0}: {0}", source.URL, ex.Message);
+                    Console.WriteLine("exception while downloading source {0}: {1}", source.URL, ex.Message);
                     if (ex.InnerException != null) 
                     {
-                        Console.WriteLine("inner exception: {0}", source.URL, ex.InnerException.Message);
+                        Console.WriteLine("inner exception: {0}: {1}", source.URL, ex.InnerException.Message);
                     }
                 }
             }
