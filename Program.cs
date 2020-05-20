@@ -2,6 +2,7 @@
 using Qml.Net.Runtimes;
 using System;
 using System.IO;
+using System.Net;
 
 namespace sunrise_launcher
 {
@@ -11,6 +12,13 @@ namespace sunrise_launcher
 
         static int Main(string[] args)
         {
+            //windows 7 tls compatibility
+            if (System.Environment.OSVersion.Platform == PlatformID.Win32NT &&
+                System.Environment.OSVersion.Version.Major == 6)
+            {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            }
+
             using (var fileout = new FileStream("./log.txt", FileMode.Create, FileAccess.Write))
             using (var writer = new StreamWriter(fileout))
             {
