@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace sunrise_launcher
 {
     public interface IManifest
     {
-        public ManifestMetadata GetMetadata();
+        public Task<ManifestMetadata> GetMetadataAsync();
 
-        public IEnumerable<ManifestFile> GetFiles();
-
-        public int Count();
+        public Task<IList<ManifestFile>> GetFilesAsync();
     }
 }

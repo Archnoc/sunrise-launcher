@@ -170,8 +170,17 @@ namespace sunrise_launcher
 
             try
             {
-                var manifest = await manifestFactory.Get(server);
+                var manifest = manifestFactory.Get(server);
                 if (manifest == null)
+                {
+                    Console.WriteLine("Unknown manifest schema at '{0}'", server.ManifestURL);
+                    server.State = State.Error;
+                    server.Error = "Unknown manifest schema";
+                    return;
+                }
+
+                var metadata = await manifest.GetMetadataAsync();
+                if (metadata == null)
                 {
                     Console.WriteLine("Could not retrieve manifest from '{0}'", server.ManifestURL);
                     server.State = State.Error;
@@ -179,7 +188,6 @@ namespace sunrise_launcher
                     return;
                 }
 
-                var metadata = manifest.GetMetadata();
                 if (!metadata.Verify())
                 {
                     Console.WriteLine("Manifest metadata failed inspection '{0}'", server.ManifestURL);
@@ -211,8 +219,18 @@ namespace sunrise_launcher
             try
             {
                 UpdateProgress(server, "Retrieving Manfiest", 0, 0);
-                var manifest = await manifestFactory.Get(server);
+                
+                var manifest = manifestFactory.Get(server);
                 if (manifest == null)
+                {
+                    Console.WriteLine("Unknown manifest schema at '{0}'", server.ManifestURL);
+                    server.State = State.Ready;
+                    server.Error = "Unknown manifest schema. You may still attempt to play, but you may be missing updates.";
+                    return;
+                }
+
+                var metadata = await manifest.GetMetadataAsync();
+                if (metadata == null)
                 {
                     Console.WriteLine("Could not retrieve manifest from '{0}'", server.ManifestURL);
                     server.State = State.Ready;
@@ -220,7 +238,6 @@ namespace sunrise_launcher
                     return;
                 }
 
-                var metadata = manifest.GetMetadata();
                 if (!metadata.Verify())
                 {
                     Console.WriteLine("Manifest metadata failed inspection '{0}'", server.ManifestURL);
@@ -229,7 +246,7 @@ namespace sunrise_launcher
                     return;
                 }
 
-                if (force || metadata.Hash != server.Hash)
+                if (force || metadata.Version != server.Version)
                 {
                     await updatefiles(server, manifest, server.InstallPath);
                 }
@@ -241,7 +258,7 @@ namespace sunrise_launcher
                 if (server.State == State.Ready)
                 {
                     server.Title = metadata.Title;
-                    server.Hash = metadata.Hash;
+                    server.Version = metadata.Version;
                     server.LaunchPath = metadata.LaunchPath;
                     server.LaunchEnv = metadata.LaunchEnv;
                     server.LaunchArgs = metadata.LaunchArgs;
@@ -308,9 +325,17 @@ namespace sunrise_launcher
             try
             {
                 var i = 0;
-                foreach (var file in manifest.GetFiles())
+                var files = await manifest.GetFilesAsync();
+                if (files == null)
                 {
-                    UpdateProgress(server, "verifying " + file.Path, i++, manifest.Count());
+                    server.State = State.Error;
+                    server.Error = "Could not retrieve files from manifest.";
+                    return;
+                }
+
+                foreach (var file in files)
+                {
+                    UpdateProgress(server, "verifying " + file.Path, i++, files.Count);
 
                     if (!file.Verify())
                     {

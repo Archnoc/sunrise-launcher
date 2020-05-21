@@ -7,37 +7,38 @@ using System.Xml.Serialization;
 
 namespace sunrise_launcher
 {
-    [XmlRoot("manifest")]
     public class TequilaXML : IManifest
     {
-        [XmlElement("label")]
-        public string Label { get; set; }
-        [XmlArray("profiles")]
-        [XmlArrayItem("launch")]
-        public List<TequilaProfile> Profiles { get; set; }
-        [XmlArray("filelist")]
-        [XmlArrayItem("file")]
-        public List<TequilaFile> FileList { get; set; }
-
-        [XmlIgnore]
-        public string Hash { get; set; }
-
         private static HttpClient client = new HttpClient();
-        public static async Task<TequilaXML> Get(Server server)
+
+        private TequilaRoot TequilaRoot;
+
+        private string Hash;
+
+        private string URL;
+
+        public TequilaXML(string url)
         {
+            URL = url;
+        }
+
+        private async Task FetchManifest()
+        {
+            if (TequilaRoot != null)
+                return;
+
             try
             {
-                var serializer = new XmlSerializer(typeof(TequilaXML));
-                var response = await client.GetAsync(server.ManifestURL);
+                var serializer = new XmlSerializer(typeof(TequilaRoot));
+                var response = await client.GetAsync(URL);
                 if (response.IsSuccessStatusCode)
                 {
                     var hash = SHA256.Create();
                     using (var reader = await response.Content.ReadAsStreamAsync())
                     using (var hashstream = new CryptoStream(reader, hash, CryptoStreamMode.Read))
                     {
-                        var manifest = (TequilaXML)serializer.Deserialize(hashstream);
-                        manifest.Hash = Hashing.ByteArrayToHex(hash.Hash);
-                        return manifest;
+                        TequilaRoot = (TequilaRoot)serializer.Deserialize(hashstream);
+                        Hash = Hashing.ByteArrayToHex(hash.Hash);
                     }
                 }
             }
@@ -45,33 +46,40 @@ namespace sunrise_launcher
             {
                 Console.WriteLine("exception while retrieving manifest: {0}", ex.Message);
             }
-            return null;
         }
 
-        public ManifestMetadata GetMetadata()
+        public async Task<ManifestMetadata> GetMetadataAsync()
         {
-            if (Profiles.Count == 0)
+            await FetchManifest();
+            if (TequilaRoot == null)
+                return null;
+
+            if (TequilaRoot.Profiles.Count == 0)
                 return null;
 
             var metadata = new ManifestMetadata();
-            metadata.Hash = Hash;
-            metadata.Title = Profiles[0].Value;
-            metadata.LaunchPath = Profiles[0].Exec;
-            metadata.LaunchArgs = Profiles[0].Params;
+            metadata.Version = Hash;
+            metadata.Title = TequilaRoot.Profiles[0].Value;
+            metadata.LaunchPath = TequilaRoot.Profiles[0].Exec;
+            metadata.LaunchArgs = TequilaRoot.Profiles[0].Params;
             return metadata;
         }
 
-        public IEnumerable<ManifestFile> GetFiles()
+        public async Task<IList<ManifestFile>> GetFilesAsync()
         {
+            await FetchManifest();
+            if (TequilaRoot == null)
+                return null;
+
             var files = new List<ManifestFile>();
-            foreach(var tequilaFile in FileList)
+            foreach (var tequilaFile in TequilaRoot.FileList)
             {
                 var file = new ManifestFile();
                 file.MD5 = tequilaFile.MD5.ToLower();
                 file.Path = tequilaFile.Name;
                 file.Size = tequilaFile.Size;
                 file.Sources = new List<FileSource>();
-                foreach(var url in tequilaFile.URL)
+                foreach (var url in tequilaFile.URL)
                 {
                     var source = new FileSource();
                     source.URL = url;
@@ -81,11 +89,19 @@ namespace sunrise_launcher
             }
             return files;
         }
+    }
 
-        public int Count()
-        {
-            return FileList.Count;
-        }
+    [XmlRoot("manifest")]
+    public class TequilaRoot
+    {
+        [XmlElement("label")]
+        public string Label { get; set; }
+        [XmlArray("profiles")]
+        [XmlArrayItem("launch")]
+        public List<TequilaProfile> Profiles { get; set; }
+        [XmlArray("filelist")]
+        [XmlArrayItem("file")]
+        public List<TequilaFile> FileList { get; set; }
     }
 
     public class TequilaProfile

@@ -6,12 +6,18 @@ using System.Text.Json.Serialization;
 
 namespace sunrise_launcher
 {
+    public class Manifest : ManifestMetadata
+    {
+        [JsonPropertyName("files")]
+        public List<ManifestFile> Files { get; set; }
+    }
+
     public class ManifestMetadata
     {
         [JsonPropertyName("title")]
         public string Title { get; set; }
-        [JsonPropertyName("hash")]
-        public string Hash { get; set; }
+        [JsonPropertyName("version")]
+        public string Version { get; set; }
         [JsonPropertyName("launch_path")]
         public string LaunchPath { get; set; }
         [JsonPropertyName("launch_env")]

@@ -18,6 +18,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="sunrise.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="sunrise.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <TrimmerRootAssembly Include="System.Text.Json" />
   </ItemGroup>
 
@@ -28,10 +38,10 @@
 
   <ItemGroup>
     <None Update="main.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="main.qml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="skins\herocity\fonts\FontsFree-Net-mont.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

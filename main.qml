@@ -405,6 +405,7 @@ ApplicationWindow {
                 placeholderText: "ex: https://example.com/servername/manifest"
                 id: textfield_manifesturl
                 Layout.fillWidth: true
+                selectByMouse: true
             }
 
             Text {
@@ -417,6 +418,7 @@ ApplicationWindow {
                 font.family: fontMont.name
                 id: textfield_installpath
                 Layout.fillWidth: true
+                selectByMouse: true
             }
         }
     }
