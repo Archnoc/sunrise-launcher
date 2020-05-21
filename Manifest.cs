@@ -14,16 +14,33 @@ namespace sunrise_launcher
 
     public class ManifestMetadata
     {
-        [JsonPropertyName("title")]
-        public string Title { get; set; }
         [JsonPropertyName("version")]
         public string Version { get; set; }
-        [JsonPropertyName("launch_path")]
+        [JsonPropertyName("launch_options")]
+        public List<LaunchOption> LaunchOptions { get; set; }
+
+        public bool Verify()
+        {
+            if (LaunchOptions.Count == 0)
+            {
+                Console.WriteLine("need at least one launch config");
+                return false;
+            }
+
+            return LaunchOptions.All(x => x.Verify());
+        }
+    }
+
+    public class LaunchOption
+    {
+        [JsonPropertyName("title")]
+        public string Title { get; set; }
+        [JsonPropertyName("path")]
         public string LaunchPath { get; set; }
-        [JsonPropertyName("launch_env")]
-        public string LaunchEnv { get; set; }
-        [JsonPropertyName("launch_args")]
-        public string LaunchArgs { get; set; }
+        [JsonPropertyName("env")]
+        public string Env { get; set; }
+        [JsonPropertyName("args")]
+        public string Args { get; set; }
 
         public bool Verify()
         {

@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace sunrise_launcher
 {
-    public class Manifiesta : IManifest
+    public class SunriseApi : IManifest
     {
         private static HttpClient client = new HttpClient();
         private string URL;
 
-        public Manifiesta(string url)
+        public SunriseApi(string url)
         {
             URL = url;
         }

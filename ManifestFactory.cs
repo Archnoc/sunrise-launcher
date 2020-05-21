@@ -4,23 +4,26 @@ namespace sunrise_launcher
 {
     public interface IManifestFactory
     {
-        public IManifest Get(Server server);
+        public IManifest Get(string manifesturl);
     }
 
     public class ManifestFactory : IManifestFactory
     {
-        const string manifiesta_v1 = "manifiesta-v1";
+        const string sunrise_api = "sunrise-api";
+        const string sunrise_json = "sunrise-json";
         const string tequila_xml = "tequila-xml";
 
-        public IManifest Get(Server server)
+        public IManifest Get(string manifesturl)
         {
-            var schema = getSchema(server.ManifestURL);
+            var schema = getSchema(manifesturl);
             switch (schema)
             {
-                case manifiesta_v1:
-                    return new Manifiesta(server.ManifestURL);
+                case sunrise_api:
+                    return new SunriseApi(manifesturl);
+                case sunrise_json:
+                    return new SunriseJson(manifesturl);
                 case tequila_xml:
-                    return new TequilaXML(server.ManifestURL);
+                    return new TequilaXML(manifesturl);
             }
             return null;
         }
@@ -29,8 +32,10 @@ namespace sunrise_launcher
         {
             if (manifesturl.ToLower().EndsWith(".xml"))
                 return tequila_xml;
+            else if (manifesturl.ToLower().EndsWith(".json"))
+                return sunrise_json;
             else
-                return manifiesta_v1;
+                return sunrise_api;
         }
     }
 }

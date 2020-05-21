@@ -68,7 +68,42 @@ namespace sunrise_launcher
             file.Save(path);
         }
 
-        public async Task AddAsync(string manifesturl, string installpath)
+        public async Task<ManifestMetadata> FindMetadataAsync(string manifesturl)
+        {
+            manifesturl = manifesturl.Trim();
+
+            try
+            {
+                var manifest = manifestFactory.Get(manifesturl);
+                if (manifest == null)
+                {
+                    Console.WriteLine("Unknown manifest schema at '{0}'", manifesturl);
+                    return null;
+                }
+
+                var metadata = await manifest.GetMetadataAsync();
+                if (metadata == null)
+                {
+                    Console.WriteLine("Could not retrieve manifest from '{0}'", manifesturl);
+                    return null;
+                }
+
+                if (!metadata.Verify())
+                {
+                    Console.WriteLine("Manifest metadata failed inspection '{0}'", manifesturl);
+                    return null;
+                }
+
+                return metadata;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception in FindMetadataAsync: {0}", ex.Message);
+                return null;
+            }
+        }
+
+        public async Task AddAsync(string manifesturl, string installpath, string launch)
         {
             manifesturl = manifesturl.Trim();
             if (Servers.Any(x => x.ManifestURL == manifesturl))
@@ -80,11 +115,12 @@ namespace sunrise_launcher
             var server = new Server();
             server.ManifestURL = manifesturl;
             server.InstallPath = CleanInstallPath(installpath);
+            server.Launch = launch;
 
-            await GetInfoAsync(server);
-            if (server.State == State.Error)
+            server.Metadata = await FindMetadataAsync(manifesturl);
+            if (server.Metadata == null)
             {
-                ShowMessage(server.Error);
+                ShowMessage("Server add failed.");
                 return;
             }
 
@@ -97,15 +133,16 @@ namespace sunrise_launcher
             ShowMessage(server.Error);
         }
 
-        public async Task ConfigAsync(string oldmanifesturl, string manifesturl, string installpath)
+        public async Task ConfigAsync(string oldmanifesturl, string manifesturl, string installpath, string launch)
         {
             var server = Get(oldmanifesturl);
             if (server == null) return;
             server.ManifestURL = manifesturl.Trim();
             server.InstallPath = CleanInstallPath(installpath);
+            server.Launch = launch;
 
-            await GetInfoAsync(server);
-            this.ActivateSignal("update");
+            //await GetInfoAsync(server);
+            //this.ActivateSignal("update");
 
             await UpdateAsync(server, false);
             this.ActivateSignal("update");
@@ -161,7 +198,8 @@ namespace sunrise_launcher
             ShowMessage(server.Error);
         }
 
-        //this is called only when a new server is added
+        //this is called only when a new server is added or modified
+        /*
         private async Task GetInfoAsync(Server server)
         {
             if (server.State == State.Updating)
@@ -170,7 +208,7 @@ namespace sunrise_launcher
 
             try
             {
-                var manifest = manifestFactory.Get(server);
+                var manifest = manifestFactory.Get(server.ManifestURL);
                 if (manifest == null)
                 {
                     Console.WriteLine("Unknown manifest schema at '{0}'", server.ManifestURL);
@@ -196,10 +234,16 @@ namespace sunrise_launcher
                     return;
                 }
 
-                server.Title = metadata.Title;
-                server.LaunchPath = metadata.LaunchPath;
-                server.LaunchEnv = metadata.LaunchEnv;
-                server.LaunchArgs = metadata.LaunchArgs;
+                server.Metadata = metadata;
+
+                if (metadata.LaunchOptions.Count == 0)
+                {
+                    server.LaunchConfig = null;
+                }
+                else if (metadata.LaunchOptions.All(x => x.Title != server.LaunchConfig))
+                {
+                    server.LaunchConfig = metadata.LaunchOptions[0].Title;
+                }
             }
             catch (Exception ex)
             {
@@ -208,7 +252,7 @@ namespace sunrise_launcher
                 server.Error = "Unknown Exception";
             }
         }
-
+        */
         private async Task UpdateAsync(Server server, bool force)
         {
             if (server.State == State.Updating)
@@ -220,7 +264,7 @@ namespace sunrise_launcher
             {
                 UpdateProgress(server, "Retrieving Manfiest", 0, 0);
                 
-                var manifest = manifestFactory.Get(server);
+                var manifest = manifestFactory.Get(server.ManifestURL);
                 if (manifest == null)
                 {
                     Console.WriteLine("Unknown manifest schema at '{0}'", server.ManifestURL);
@@ -246,7 +290,7 @@ namespace sunrise_launcher
                     return;
                 }
 
-                if (force || metadata.Version != server.Version)
+                if (force || metadata.Version != server.Metadata.Version)
                 {
                     await updatefiles(server, manifest, server.InstallPath);
                 }
@@ -257,11 +301,13 @@ namespace sunrise_launcher
 
                 if (server.State == State.Ready)
                 {
-                    server.Title = metadata.Title;
-                    server.Version = metadata.Version;
-                    server.LaunchPath = metadata.LaunchPath;
-                    server.LaunchEnv = metadata.LaunchEnv;
-                    server.LaunchArgs = metadata.LaunchArgs;
+                    server.Metadata = metadata;
+                }
+
+                //if update occurs which removes the selected launch option, default to first option available
+                if (metadata.LaunchOptions.All(x => x.Title != server.Launch))
+                {
+                    server.Launch = metadata.LaunchOptions[0].Title;
                 }
             }
             catch (Exception ex)
@@ -436,12 +482,18 @@ namespace sunrise_launcher
 
             try
             {
-                var fullpath = Path.Combine(server.InstallPath, server.LaunchPath);
+                var launch = server.Metadata.LaunchOptions.FirstOrDefault(x => x.Title == server.Launch);
+                if (launch == null)
+                {
+                    Console.WriteLine("ERROR: launch option not found: {0}", server.Launch);
+                }
+
+                var fullpath = Path.Combine(server.InstallPath, launch.LaunchPath);
 
                 var process = new Process();
                 process.StartInfo.WorkingDirectory = Path.GetDirectoryName(fullpath);
                 process.StartInfo.FileName = fullpath;
-                process.StartInfo.Arguments = server.LaunchArgs;
+                process.StartInfo.Arguments = launch.Args;
                 process.StartInfo.WindowStyle = ProcessWindowStyle.Maximized;
                 process.Start();
             }

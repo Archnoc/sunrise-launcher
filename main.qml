@@ -159,7 +159,7 @@ ApplicationWindow {
                         RadioButton {
                             id: button_server
                             y: 10
-                            text: modelData.title
+                            text: modelData.launch
                             ButtonGroup.group: buttongroup_servers
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.left: button_remove.right
@@ -384,8 +384,10 @@ ApplicationWindow {
         standardButtons: StandardButton.Save | StandardButton.Cancel
         modality: Qt.WindowModal
         property string manifestURL
-        onAccepted: Main.configSave();
-        width: 500
+        property bool verified
+        onActionChosen: Main.configSave(action);
+        width: 548
+        height: 400
         
         GridLayout {
             
@@ -394,19 +396,7 @@ ApplicationWindow {
             anchors.right: parent.right
             anchors.rightMargin: 0
 
-            columns: 2
-
-            Text {
-                text: "Manifest URL"
-                font.family: fontMont.name
-            }
-
-            TextField {
-                placeholderText: "ex: https://example.com/servername/manifest"
-                id: textfield_manifesturl
-                Layout.fillWidth: true
-                selectByMouse: true
-            }
+            columns: 3
 
             Text {
                 text: "Install Path"
@@ -419,6 +409,39 @@ ApplicationWindow {
                 id: textfield_installpath
                 Layout.fillWidth: true
                 selectByMouse: true
+            }
+
+            Text { text: " " }
+
+            Text {
+                text: "Manifest URL"
+                font.family: fontMont.name
+            }
+
+            TextField {
+                placeholderText: "ex: https://example.com/servername/manifest"
+                id: textfield_manifesturl
+                Layout.fillWidth: true
+                selectByMouse: true
+                onTextChanged: Main.configUrlChanged()
+            }
+
+            Button {
+                text: "Find"
+                id: "button_findurl"
+                onClicked: Main.findUrl()
+            }
+
+            Text {
+                text: "Launch"
+                font.family: fontMont.name
+            }
+
+            ComboBox {
+                id: combobox_launch
+                Layout.fillWidth: true
+                font.family: fontMont.name
+                palette.highlightedText: "black"
             }
         }
     }
@@ -439,6 +462,12 @@ ApplicationWindow {
         modality: Qt.WindowModal
         standardButtons: StandardButton.Ok
         informativeText: "See log.txt for details"
+    }
+
+    MessageDialog {
+        id: dialogInfo
+        modality: Qt.WindowModal
+        standardButtons: StandardButton.Ok
     }
 
     Component.onCompleted: Main.init()

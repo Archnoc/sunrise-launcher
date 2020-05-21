@@ -54,14 +54,19 @@ namespace sunrise_launcher
             if (TequilaRoot == null)
                 return null;
 
-            if (TequilaRoot.Profiles.Count == 0)
-                return null;
-
             var metadata = new ManifestMetadata();
             metadata.Version = Hash;
-            metadata.Title = TequilaRoot.Profiles[0].Value;
-            metadata.LaunchPath = TequilaRoot.Profiles[0].Exec;
-            metadata.LaunchArgs = TequilaRoot.Profiles[0].Params;
+            metadata.LaunchOptions = new List<LaunchOption>();
+
+            foreach (var profile in TequilaRoot.Profiles)
+            {
+                var config = new LaunchOption();
+                config.Title = profile.Value;
+                config.LaunchPath = profile.Exec;
+                config.Args = profile.Params;
+                metadata.LaunchOptions.Add(config);
+            }
+
             return metadata;
         }
 
