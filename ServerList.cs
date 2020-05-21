@@ -198,61 +198,6 @@ namespace sunrise_launcher
             ShowMessage(server.Error);
         }
 
-        //this is called only when a new server is added or modified
-        /*
-        private async Task GetInfoAsync(Server server)
-        {
-            if (server.State == State.Updating)
-                server.State = State.Updating;
-            server.Error = null;
-
-            try
-            {
-                var manifest = manifestFactory.Get(server.ManifestURL);
-                if (manifest == null)
-                {
-                    Console.WriteLine("Unknown manifest schema at '{0}'", server.ManifestURL);
-                    server.State = State.Error;
-                    server.Error = "Unknown manifest schema";
-                    return;
-                }
-
-                var metadata = await manifest.GetMetadataAsync();
-                if (metadata == null)
-                {
-                    Console.WriteLine("Could not retrieve manifest from '{0}'", server.ManifestURL);
-                    server.State = State.Error;
-                    server.Error = "Could not retrieve manifest";
-                    return;
-                }
-
-                if (!metadata.Verify())
-                {
-                    Console.WriteLine("Manifest metadata failed inspection '{0}'", server.ManifestURL);
-                    server.State = State.Error;
-                    server.Error = "Metadata failed inspection";
-                    return;
-                }
-
-                server.Metadata = metadata;
-
-                if (metadata.LaunchOptions.Count == 0)
-                {
-                    server.LaunchConfig = null;
-                }
-                else if (metadata.LaunchOptions.All(x => x.Title != server.LaunchConfig))
-                {
-                    server.LaunchConfig = metadata.LaunchOptions[0].Title;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Exception in GetInfoAsync: {0}", ex.Message);
-                server.State = State.Error;
-                server.Error = "Unknown Exception";
-            }
-        }
-        */
         private async Task UpdateAsync(Server server, bool force)
         {
             if (server.State == State.Updating)
